@@ -33,6 +33,12 @@ const userSchema = new mongoose.Schema(
       immunizations: [{ type: String }],
     },
 
+    riskLevel: {
+      type: String,
+      enum: ["High", "Medium", "Low", "Unknown"],
+      default: "Unknown",
+    },
+
     // Inpatient Info
     inpatient: {
       isAdmitted: { type: Boolean, default: false },

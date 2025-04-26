@@ -8,6 +8,8 @@ import { v2 as cloudinary } from "cloudinary";
 import stripe from "stripe";
 import razorpay from "razorpay";
 
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
 // Gateway Initialize
 const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
 const razorpayInstance = new razorpay({
@@ -345,6 +347,67 @@ const verifyStripe = async (req, res) => {
   }
 };
 
+const getRiskLevel = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    const user = await userModel.findById(userId);
+    if (!user) return res.json({ success: false, message: "User not found" });
+
+    const dob = new Date(user.dob);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+
+    const prompt = `
+Given the patient data:
+Name: ${user.name}
+Age: ${age}
+Gender: ${user.gender}
+Chronic Conditions: ${
+      user.medicalHistory?.chronicConditions?.join(", ") || "None"
+    }
+Allergies: ${user.medicalHistory?.allergies?.join(", ") || "None"}
+Surgeries: ${user.medicalHistory?.surgeries?.join(", ") || "None"}
+Medications: ${user.medicalHistory?.medications?.join(", ") || "None"}
+
+Determine the patient's health risk level as either "High", "Medium", or "Low". Just respond with one of those three words.
+`;
+    console.log(process.env.GOOGLE_API_KEY);
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GOOGLE_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: prompt }],
+            },
+          ],
+        }),
+      }
+    );
+
+    const result = await response.json();
+
+    console.log({ result });
+
+    const riskLevel =
+      result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "Unknown";
+
+    await userModel.findByIdAndUpdate(userId, { riskLevel });
+
+    res.json({ success: true, riskLevel });
+  } catch (error) {
+    console.error("Gemini fetch error:", error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
 export {
   loginUser,
   registerUser,
@@ -357,4 +420,5 @@ export {
   verifyRazorpay,
   paymentStripe,
   verifyStripe,
+  getRiskLevel,
 };

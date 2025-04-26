@@ -1,20 +1,31 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
-import './index.css'
-import { BrowserRouter } from 'react-router-dom'
-import AdminContextProvider from './context/AdminContext.jsx'
-import DoctorContextProvider from './context/DoctorContext.jsx'
-import AppContextProvider from './context/AppContext.jsx'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.jsx";
+import "./index.css";
+import { BrowserRouter } from "react-router-dom";
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+import AdminContextProvider from "./context/AdminContext.jsx";
+import DoctorContextProvider from "./context/DoctorContext.jsx";
+import AppContextProvider from "./context/AppContext.jsx";
+import NurseContextProvider from "./context/NurseContext.jsx"; // ✅ Add this
+import TechnicianContextProvider from "./context/TechnicianContext.jsx"; // ✅ Add this
+
+ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <AdminContextProvider>
       <DoctorContextProvider>
-        <AppContextProvider>
-          <App />
-        </AppContextProvider>
+        <NurseContextProvider>
+          {" "}
+          {/* ✅ wrap */}
+          <TechnicianContextProvider>
+            {" "}
+            {/* ✅ wrap */}
+            <AppContextProvider>
+              <App />
+            </AppContextProvider>
+          </TechnicianContextProvider>
+        </NurseContextProvider>
       </DoctorContextProvider>
     </AdminContextProvider>
-  </BrowserRouter>,
-)
+  </BrowserRouter>
+);

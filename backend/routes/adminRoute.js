@@ -1,16 +1,68 @@
-import express from 'express';
-import { loginAdmin, appointmentsAdmin, appointmentCancel, addDoctor, allDoctors, adminDashboard } from '../controllers/adminController.js';
-import { changeAvailablity } from '../controllers/doctorController.js';
-import authAdmin from '../middleware/authAdmin.js';
-import upload from '../middleware/multer.js';
+import express from "express";
+import {
+  loginAdmin,
+  appointmentsAdmin,
+  appointmentCancel,
+  addDoctor,
+  allDoctors,
+  adminDashboard,
+  addNurse,
+  allNurses,
+  addTechnician,
+  allTechnicians,
+} from "../controllers/adminController.js";
+
+import { changeAvailablity as changeDoctorAvailability } from "../controllers/doctorController.js";
+
+import { changeAvailablity as changeNurseAvailability } from "../controllers/nurseController.js";
+
+import { changeAvailablity as changeTechnicianAvailability } from "../controllers/technicianController.js";
+
+import authAdmin from "../middleware/authAdmin.js";
+import upload from "../middleware/multer.js";
+
 const adminRouter = express.Router();
 
-adminRouter.post("/login", loginAdmin)
-adminRouter.post("/add-doctor", authAdmin, upload.single('image'), addDoctor)
-adminRouter.get("/appointments", authAdmin, appointmentsAdmin)
-adminRouter.post("/cancel-appointment", authAdmin, appointmentCancel)
-adminRouter.get("/all-doctors", authAdmin, allDoctors)
-adminRouter.post("/change-availability", authAdmin, changeAvailablity)
-adminRouter.get("/dashboard", authAdmin, adminDashboard)
+// Admin Login
+adminRouter.post("/login", loginAdmin);
+
+// Doctor Routes
+adminRouter.post("/add-doctor", authAdmin, upload.single("image"), addDoctor);
+adminRouter.get("/all-doctors", authAdmin, allDoctors);
+adminRouter.post(
+  "/change-doctor-availability",
+  authAdmin,
+  changeDoctorAvailability
+);
+
+// Nurse Routes
+adminRouter.post("/add-nurse", authAdmin, upload.single("image"), addNurse);
+adminRouter.get("/all-nurses", authAdmin, allNurses);
+adminRouter.post(
+  "/change-nurse-availability",
+  authAdmin,
+  changeNurseAvailability
+);
+
+// Technician Routes
+adminRouter.post(
+  "/add-technician",
+  authAdmin,
+  upload.single("image"),
+  addTechnician
+);
+adminRouter.get("/all-technicians", authAdmin, allTechnicians);
+adminRouter.post(
+  "/change-technician-availability",
+  authAdmin,
+  changeTechnicianAvailability
+);
+
+// Appointments
+adminRouter.get("/appointments", authAdmin, appointmentsAdmin);
+adminRouter.post("/cancel-appointment", authAdmin, appointmentCancel);
+
+// Dashboard
+adminRouter.get("/dashboard", authAdmin, adminDashboard);
 
 export default adminRouter;
