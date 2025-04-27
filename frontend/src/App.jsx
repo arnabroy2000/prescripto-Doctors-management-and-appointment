@@ -13,6 +13,8 @@ import MyProfile from "./pages/MyProfile";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Verify from "./pages/Verify";
+import BookTest from "./pages/BookTest";
+import MyTests from "./pages/MyTests";
 
 const App = () => {
   return (
@@ -22,12 +24,14 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/doctors" element={<Doctors />} />
+        <Route path="/booktest" element={<BookTest />} />
         <Route path="/doctors/:speciality" element={<Doctors />} />
         <Route path="/login" element={<Login />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/appointment/:docId" element={<Appointment />} />
         <Route path="/my-appointments" element={<MyAppointments />} />
+        <Route path="/my-tests" element={<MyTests />} />
         <Route path="/my-profile" element={<MyProfile />} />
         <Route path="/verify" element={<Verify />} />
       </Routes>

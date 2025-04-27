@@ -13,7 +13,7 @@ const TechnicianContextProvider = (props) => {
   const getProfileData = async () => {
     try {
       const { data } = await axios.get(backendUrl + "/api/technician/profile", {
-        headers: { tToken },
+        headers: { token: tToken }, // ✅ send as token
       });
       setProfileData(data.technician);
     } catch (error) {

@@ -57,6 +57,24 @@ const userSchema = new mongoose.Schema(
       },
     ],
 
+    // Test Reports
+    tests: [
+      {
+        testName: { type: String, required: true },
+        technicianId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "technician",
+        },
+        testDate: { type: Date },
+        reportUrl: { type: String, default: "" },
+        status: {
+          type: String,
+          enum: ["Pending", "Completed"],
+          default: "Pending",
+        },
+      },
+    ],
+
     // Billing Info
     billing: {
       insuranceProvider: { type: String, default: "" },

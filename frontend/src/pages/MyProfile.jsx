@@ -43,7 +43,7 @@ const MyProfile = () => {
 
   const checkRisk = async () => {
     try {
-      if (userData.riskLevel !== "Unknown") return;
+      // if (userData.riskLevel !== "Unknown") return;
 
       const { data } = await axios.post(
         backendUrl + "/api/user/get-risk-level",

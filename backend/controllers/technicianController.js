@@ -1,12 +1,12 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import technicianModel from "../models/technicianModel.js";
+import userModel from "../models/userModel.js";
 import { v2 as cloudinary } from "cloudinary";
 
-// Generate JWT token
 const generateToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET);
 
-// Technician Login (Technician Panel)
+// Technician Login
 const loginTechnician = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -23,7 +23,7 @@ const loginTechnician = async (req, res) => {
   }
 };
 
-// Technician Profile (Technician Panel)
+// Technician Profile
 const technicianProfile = async (req, res) => {
   try {
     const { technicianId } = req.body;
@@ -41,7 +41,7 @@ const technicianProfile = async (req, res) => {
   }
 };
 
-// Update Technician Profile (Technician Panel)
+// Update Technician Profile
 const updateTechnicianProfile = async (req, res) => {
   try {
     const { technicianId, address, available, department, skills } = req.body;
@@ -59,7 +59,7 @@ const updateTechnicianProfile = async (req, res) => {
   }
 };
 
-// Admin Panel - Add Technician
+// Admin Panel: Add Technician
 const addTechnician = async (req, res) => {
   try {
     const { name, email, password, department, experience, skills, address } =
@@ -112,7 +112,7 @@ const addTechnician = async (req, res) => {
   }
 };
 
-// Admin Panel - Get All Technicians
+// Admin Panel: Get All Technicians
 const allTechnicians = async (req, res) => {
   try {
     const technicians = await technicianModel.find({}).select("-password");
@@ -122,7 +122,7 @@ const allTechnicians = async (req, res) => {
   }
 };
 
-// Admin Panel - Change Technician Availability
+// Admin Panel: Change Availability
 const changeAvailablity = async (req, res) => {
   try {
     const { technicianId } = req.body;
@@ -142,6 +142,106 @@ const changeAvailablity = async (req, res) => {
   }
 };
 
+// List Tests assigned to Technician
+const listAssignedTests = async (req, res) => {
+  try {
+    const { technicianId } = req.body;
+
+    const users = await userModel.find({ "tests.technicianId": technicianId });
+
+    let assignedTests = [];
+
+    users.forEach((user) => {
+      user.tests.forEach((test) => {
+        if (test.technicianId.toString() === technicianId) {
+          assignedTests.push({
+            _id: test._id,
+            userId: user._id,
+            userName: user.name,
+            userEmail: user.email,
+            testName: test.testName,
+            testDate: test.testDate,
+            status: test.status,
+            reportUrl: test.reportUrl || null,
+          });
+        }
+      });
+    });
+
+    res.json({ success: true, assignedTests });
+  } catch (error) {
+    console.error(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// Upload/Submit Test Report
+const uploadTestReport = async (req, res) => {
+  try {
+    const {
+      testId,
+      chronicConditions = [],
+      allergies = [],
+      surgeries = [],
+      medications = [],
+      remarks = "",
+    } = req.body;
+
+    // Find user who has this test
+    const user = await userModel.findOne({ "tests._id": testId });
+
+    if (!user) {
+      return res.json({ success: false, message: "User or Test not found" });
+    }
+
+    // Update the specific test
+    user.tests = user.tests.map((test) => {
+      if (test._id.toString() === testId) {
+        return {
+          ...test.toObject(),
+          status: "Completed",
+          remarks,
+        };
+      }
+      return test;
+    });
+
+    // Ensure medicalHistory exists
+    if (!user.medicalHistory) {
+      user.medicalHistory = {
+        chronicConditions: [],
+        allergies: [],
+        surgeries: [],
+        medications: [],
+      };
+    }
+
+    // Merge new data without duplicates
+    const addUnique = (oldArray, newArray) => {
+      newArray.forEach((item) => {
+        if (!oldArray.includes(item)) {
+          oldArray.push(item);
+        }
+      });
+    };
+
+    addUnique(user.medicalHistory.chronicConditions, chronicConditions);
+    addUnique(user.medicalHistory.allergies, allergies);
+    addUnique(user.medicalHistory.surgeries, surgeries);
+    addUnique(user.medicalHistory.medications, medications);
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Test Report Submitted and User Updated",
+    });
+  } catch (error) {
+    console.error(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
 export {
   loginTechnician,
   technicianProfile,
@@ -149,4 +249,6 @@ export {
   addTechnician,
   allTechnicians,
   changeAvailablity,
+  listAssignedTests,
+  uploadTestReport,
 };

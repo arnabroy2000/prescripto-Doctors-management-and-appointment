@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import validator from "validator";
 import userModel from "../models/userModel.js";
 import doctorModel from "../models/doctorModel.js";
+import technicianModel from "../models/technicianModel.js";
 import appointmentModel from "../models/appointmentModel.js";
 import { v2 as cloudinary } from "cloudinary";
 import stripe from "stripe";
@@ -408,6 +409,52 @@ Determine the patient's health risk level as either "High", "Medium", or "Low". 
   }
 };
 
+const bookTest = async (req, res) => {
+  try {
+    const { userId, testName, testDate } = req.body;
+
+    const technician = await technicianModel.findOne({ available: true });
+    if (!technician) {
+      return res.json({
+        success: false,
+        message: "No technician available currently.",
+      });
+    }
+
+    await userModel.findByIdAndUpdate(userId, {
+      $push: {
+        tests: {
+          testName,
+          technicianId: technician._id,
+          testDate,
+          status: "Pending",
+        },
+      },
+    });
+
+    res.json({ success: true, message: "Test booked successfully." });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+const listTests = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const user = await userModel.findById(userId).select("tests");
+
+    if (!user) {
+      return res.json({ success: false, message: "User not found" });
+    }
+
+    res.json({ success: true, tests: user.tests.reverse() });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
 export {
   loginUser,
   registerUser,
@@ -421,4 +468,6 @@ export {
   paymentStripe,
   verifyStripe,
   getRiskLevel,
+  bookTest,
+  listTests,
 };
