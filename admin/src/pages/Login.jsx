@@ -4,6 +4,8 @@ import { DoctorContext } from "../context/DoctorContext";
 import { AdminContext } from "../context/AdminContext";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { TechnicianContext } from "../context/TechnicianContext";
+import { NurseContext } from "../context/NurseContext";
 
 const Login = () => {
   const [role, setRole] = useState("Admin");
@@ -14,6 +16,8 @@ const Login = () => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const { setDToken } = useContext(DoctorContext);
   const { setAToken } = useContext(AdminContext);
+  const { setTToken } = useContext(TechnicianContext);
+  const { setNToken } = useContext(NurseContext);
   const navigate = useNavigate();
 
   const onSubmitHandler = async (event) => {
@@ -39,10 +43,12 @@ const Login = () => {
             navigate("/doctor/dashboard");
             break;
           case "Nurse":
+            setNToken(data.token);
             localStorage.setItem("nToken", data.token);
             navigate("/nurse/dashboard");
             break;
           case "Technician":
+            setTToken(data.token);
             localStorage.setItem("tToken", data.token);
             navigate("/technician/dashboard");
             break;

@@ -13,10 +13,15 @@ import {
 } from "../controllers/adminController.js";
 
 import { changeAvailablity as changeDoctorAvailability } from "../controllers/doctorController.js";
-
 import { changeAvailablity as changeNurseAvailability } from "../controllers/nurseController.js";
-
 import { changeAvailablity as changeTechnicianAvailability } from "../controllers/technicianController.js";
+
+import {
+  addInventoryItem,
+  updateInventoryItem,
+  deleteInventoryItem,
+  listInventoryItems,
+} from "../controllers/inventoryController.js";
 
 import authAdmin from "../middleware/authAdmin.js";
 import upload from "../middleware/multer.js";
@@ -64,5 +69,11 @@ adminRouter.post("/cancel-appointment", authAdmin, appointmentCancel);
 
 // Dashboard
 adminRouter.get("/dashboard", authAdmin, adminDashboard);
+
+// Inventory (Medication, Consumables, Equipment Management)
+adminRouter.post("/inventory/add", authAdmin, addInventoryItem);
+adminRouter.put("/inventory/update/:id", authAdmin, updateInventoryItem);
+adminRouter.delete("/inventory/delete/:id", authAdmin, deleteInventoryItem);
+adminRouter.get("/inventory/list", authAdmin, listInventoryItems);
 
 export default adminRouter;

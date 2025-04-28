@@ -8,14 +8,99 @@ const AdminContextProvider = (props) => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const [aToken, setAToken] = useState(localStorage.getItem("aToken") || "");
-
   const [appointments, setAppointments] = useState([]);
   const [doctors, setDoctors] = useState([]);
-  const [nurses, setNurses] = useState([]); // ✅
-  const [technicians, setTechnicians] = useState([]); // ✅
+  const [nurses, setNurses] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
+  const [inventoryItems, setInventoryItems] = useState([]);
   const [dashData, setDashData] = useState(false);
 
-  // Doctor APIs
+  // ---------------------------------------
+  // INVENTORY APIs
+  // ---------------------------------------
+
+  const getAllInventoryItems = async () => {
+    try {
+      const { data } = await axios.get(
+        backendUrl + "/api/admin/inventory/list",
+        {
+          headers: { aToken },
+        }
+      );
+      if (data.success) {
+        setInventoryItems(data.items);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message);
+    }
+  };
+
+  const addInventoryItem = async (itemData) => {
+    try {
+      const { data } = await axios.post(
+        backendUrl + "/api/admin/inventory/add",
+        itemData,
+        {
+          headers: { aToken },
+        }
+      );
+      if (data.success) {
+        toast.success(data.message);
+        getAllInventoryItems();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const updateInventoryItem = async (id, updateData) => {
+    try {
+      const { data } = await axios.put(
+        backendUrl + `/api/admin/inventory/update/${id}`,
+        updateData,
+        {
+          headers: { aToken },
+        }
+      );
+      if (data.success) {
+        toast.success(data.message);
+        getAllInventoryItems();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const deleteInventoryItem = async (id) => {
+    try {
+      const { data } = await axios.delete(
+        backendUrl + `/api/admin/inventory/delete/${id}`,
+        {
+          headers: { aToken },
+        }
+      );
+      if (data.success) {
+        toast.success(data.message);
+        getAllInventoryItems();
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  // ---------------------------------------
+  // DOCTOR APIs
+  // ---------------------------------------
+
   const getAllDoctors = async () => {
     try {
       const { data } = await axios.get(backendUrl + "/api/admin/all-doctors", {
@@ -45,12 +130,14 @@ const AdminContextProvider = (props) => {
         toast.error(data.message);
       }
     } catch (error) {
-      console.log(error);
       toast.error(error.message);
     }
   };
 
-  // Nurse APIs
+  // ---------------------------------------
+  // NURSE APIs
+  // ---------------------------------------
+
   const getAllNurses = async () => {
     try {
       const { data } = await axios.get(backendUrl + "/api/admin/all-nurses", {
@@ -80,17 +167,21 @@ const AdminContextProvider = (props) => {
         toast.error(data.message);
       }
     } catch (error) {
-      console.log(error);
       toast.error(error.message);
     }
   };
 
-  // Technician APIs
+  // ---------------------------------------
+  // TECHNICIAN APIs
+  // ---------------------------------------
+
   const getAllTechnicians = async () => {
     try {
       const { data } = await axios.get(
         backendUrl + "/api/admin/all-technicians",
-        { headers: { aToken } }
+        {
+          headers: { aToken },
+        }
       );
       if (data.success) {
         setTechnicians(data.technicians);
@@ -116,12 +207,14 @@ const AdminContextProvider = (props) => {
         toast.error(data.message);
       }
     } catch (error) {
-      console.log(error);
       toast.error(error.message);
     }
   };
 
-  // Appointment APIs
+  // ---------------------------------------
+  // APPOINTMENT APIs
+  // ---------------------------------------
+
   const getAllAppointments = async () => {
     try {
       const { data } = await axios.get(backendUrl + "/api/admin/appointments", {
@@ -134,7 +227,6 @@ const AdminContextProvider = (props) => {
       }
     } catch (error) {
       toast.error(error.message);
-      console.log(error);
     }
   };
 
@@ -153,11 +245,13 @@ const AdminContextProvider = (props) => {
       }
     } catch (error) {
       toast.error(error.message);
-      console.log(error);
     }
   };
 
-  // Dashboard Data
+  // ---------------------------------------
+  // DASHBOARD Data
+  // ---------------------------------------
+
   const getDashData = async () => {
     try {
       const { data } = await axios.get(backendUrl + "/api/admin/dashboard", {
@@ -169,34 +263,43 @@ const AdminContextProvider = (props) => {
         toast.error(data.message);
       }
     } catch (error) {
-      console.log(error);
       toast.error(error.message);
     }
   };
+
+  // ---------------------------------------
+  // CONTEXT EXPORT
+  // ---------------------------------------
 
   const value = {
     aToken,
     setAToken,
     backendUrl,
-    doctors,
-    nurses,
-    technicians,
-    appointments,
-    dashData,
     // Doctors
+    doctors,
     getAllDoctors,
     changeDoctorAvailability,
     // Nurses
+    nurses,
     getAllNurses,
     changeNurseAvailability,
     // Technicians
+    technicians,
     getAllTechnicians,
     changeTechnicianAvailability,
     // Appointments
+    appointments,
     getAllAppointments,
     cancelAppointment,
     // Dashboard
+    dashData,
     getDashData,
+    // Inventory
+    inventoryItems,
+    getAllInventoryItems,
+    addInventoryItem,
+    updateInventoryItem,
+    deleteInventoryItem,
   };
 
   return (
